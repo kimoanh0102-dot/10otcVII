@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastery: Ôn Tập Chương 7 - Toán 10</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        window.MathJax = {
+            tex: { 
+                inlineMath: [['$', '$'], ['\\(', '\\)']], 
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: { enableMenu: false },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #eef2ff; color: #1e293b; }
+        .math-render { opacity: 0; transition: opacity 0.5s ease; }
+        .math-render.ready { opacity: 1; }
+        .choice-btn:active { transform: scale(0.97); }
+        .explanation-box { 
+            border-left: 8px solid #4f46e5; 
+            background-color: #e0e7ff;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.08);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-check { box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4); }
+        .item-row { transition: all 0.2s ease; }
+        .item-row:hover { background-color: #ffffff; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 md:p-6">
+    <div id="game-app" class="w-full max-w-5xl bg-white rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(79,70,229,0.15)] border border-indigo-50 flex flex-col">
+        
+        <!-- Header -->
+        <div class="bg-indigo-600 p-8 text-white text-center relative overflow-hidden rounded-t-[2.5rem]">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-800 via-indigo-600 to-blue-500 opacity-95"></div>
+            <div class="relative z-10">
+                <h1 class="text-3xl font-extrabold tracking-tight text-white mb-2 italic uppercase">ÔN TẬP TỔNG HỢP CHƯƠNG VII</h1>
+                <p class="text-indigo-100 text-sm font-medium opacity-90 uppercase tracking-[0.3em]">Toán 10 KNTT (Đường Thẳng - Đường Tròn - Conic)</p>
+            </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div id="progress-container" class="hidden h-3 bg-slate-100 relative">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-400 to-blue-500 transition-all duration-700 w-0"></div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="main-content" class="p-6 md:p-12 flex-grow min-h-[600px] flex flex-col overflow-y-auto">
+            <div id="start-screen" class="text-center py-16 my-auto">
+                <div class="text-[10rem] mb-8 leading-none">🧭</div>
+                <h2 class="text-4xl font-black text-slate-800 mb-6 uppercase tracking-tighter">KIỂM TRA KIẾN THỨC</h2>
+                <p class="text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed text-xl">
+                    Hệ thống gồm 50 câu hỏi bám sát chuẩn kiến thức SGK <b>Kết nối tri thức 10</b>. <br>
+                    Lời giải chi tiết chuẩn LaTeX được bóc tách cặn kẽ 4 ý. Thuật toán đảm bảo tỷ lệ lặp lại so với đề liền trước là <b class="text-indigo-600">0%</b>.
+                </p>
+                <button onclick="initGame()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-24 py-6 rounded-[2rem] font-black text-2xl shadow-xl transition-all active:scale-95 transform hover:-translate-y-1">BẮT ĐẦU NGAY</button>
+            </div>
+        </div>
+
+        <!-- Footer Control -->
+        <div id="footer-actions" class="hidden p-8 bg-slate-50 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 rounded-b-[2.5rem]">
+            <div id="status" class="text-lg font-black text-indigo-600 uppercase tracking-[0.25em]">CÂU 1 / 15</div>
+            <div class="flex gap-4 w-full md:w-auto">
+                <button id="check-btn" onclick="processAnswer()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-16 py-4 rounded-2xl font-bold text-xl transition shadow-lg btn-check active:scale-95">Kiểm tra</button>
+                <button id="next-btn" onclick="renderNext()" class="hidden flex-1 md:flex-none bg-blue-500 hover:bg-blue-600 text-white px-16 py-4 rounded-2xl font-bold text-xl shadow-lg transition active:scale-95">Tiếp theo →</button>
+                <button id="result-btn" onclick="finishGame()" class="hidden flex-1 md:flex-none bg-orange-500 hover:bg-orange-600 text-white px-16 py-4 rounded-2xl font-bold text-xl shadow-lg transition active:scale-95">Kết quả</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MASTER_POOL = {
+            part1: [
+                { id: "oc7_p1_1", question: "Vectơ nào sau đây là vectơ chỉ phương của đường thẳng $2x - y + 1 = 0$?", options: ["$(2; 1)$", "$(2; -1)$", "$(1; 2)$", "$(-1; 2)$"], correct: 2, explanation: "Đường thẳng $2x - y + 1 = 0$ có vectơ pháp tuyến là $\\vec{n} = (2; -1)$. <br>Suy ra vectơ chỉ phương vuông góc với $\\vec{n}$ là $\\vec{u} = (1; 2)$ hoặc $(-1; -2)$." },
+                { id: "oc7_p1_2", question: "Vectơ nào sau đây là vectơ pháp tuyến của đường thẳng $\\begin{cases} x = 1 - 2t \\\\ y = 3t \\end{cases}$?", options: ["$(3; -2)$", "$(3; 2)$", "$(-2; 3)$", "$(2; 3)$"], correct: 1, explanation: "Từ phương trình tham số, đường thẳng có vectơ chỉ phương là $\\vec{u} = (-2; 3)$. <br>Do đó, vectơ pháp tuyến tương ứng vuông góc với $\\vec{u}$ là $\\vec{n} = (3; 2)$." },
+                { id: "oc7_p1_3", question: "Vectơ nào sau đây là vectơ pháp tuyến của đường thẳng đi qua hai điểm $A(3; 2)$ và $B(1; -1)$?", options: ["$(3; -2)$", "$(3; 2)$", "$(2; 3)$", "$(2; -3)$"], correct: 0, explanation: "Đường thẳng đi qua hai điểm $A, B$ nhận $\\vec{BA} = (3 - 1; 2 - (-1)) = (2; 3)$ làm vectơ chỉ phương. <br>Suy ra vectơ pháp tuyến của đường thẳng này là $\\vec{n} = (3; -2)$." },
+                { id: "oc7_p1_4", question: "Xét vị trí tương đối của hai đường thẳng $d_1: x - 2y + 2 = 0$ và $d_2: -3x + 6y - 11 = 0$.", options: ["Trùng nhau", "Song song", "Vuông góc với nhau", "Cắt nhau nhưng không vuông góc"], correct: 1, explanation: "Xét tỉ lệ các hệ số tương ứng của $x, y$ và hệ số tự do: $\\frac{1}{-3} = \\frac{-2}{6} \\ne \\frac{2}{-11}$. <br>Vậy hai đường thẳng $d_1$ và $d_2$ song song với nhau." },
+                { id: "oc7_p1_5", question: "Trong mặt phẳng toạ độ $Oxy$, đường tròn có phương trình $(x - 2)^2 + (y - 1)^2 = 4$ có bán kính bằng:", options: ["4", "1", "2", "3"], correct: 2, explanation: "Đường tròn có phương trình chính tắc dạng $(x-a)^2 + (y-b)^2 = R^2$. <br>Ta có $R^2 = 4 \\Rightarrow R = 2$." },
+                { id: "oc7_p1_6", question: "Đường Hypebol $\\frac{x^2}{20} - \\frac{y^2}{16} = 1$ có tiêu cự bằng:", options: ["4", "2", "12", "6"], correct: 2, explanation: "Ta có: $a^2 = 20, b^2 = 16$. <br>Mối liên hệ giữa các đại lượng: $c^2 = a^2 + b^2 = 20 + 16 = 36 \\Rightarrow c = 6$. <br>Khi đó Hypebol có tiêu cự là $2c = 12$." },
+                { id: "oc7_p1_7", question: "Trong mặt phẳng tọa độ $Oxy$, cho hai đường thẳng $d_1: 2x - y = 0$ và $d_2: x + 2y + 1 = 0$. Vị trí tương đối của hai đường thẳng $d_1$ và $d_2$ là:", options: ["$d_1 \\equiv d_2$", "$d_1 \\parallel d_2$", "$d_1 \\perp d_2$", "Cắt nhau và không vuông góc"], correct: 2, explanation: "Ta có: $d_1$ và $d_2$ lần lượt có véctơ pháp tuyến là $\\vec{n_1} = (2; -1)$ và $\\vec{n_2} = (1; 2)$. <br>Vì $\\vec{n_1} \\cdot \\vec{n_2} = 2(1) + (-1)(2) = 0 \\Rightarrow \\vec{n_1} \\perp \\vec{n_2}$. <br>Vậy $d_1$ và $d_2$ vuông góc với nhau." },
+                { id: "oc7_p1_8", question: "Góc giữa hai đường thẳng $\\Delta_1: 3x + 4y - 7 = 0$ và $\\Delta_2: 6x - 8y + 2 = 0$ bằng:", options: ["$10^\\circ$", "$74^\\circ$", "$60^\\circ$", "$54^\\circ$"], correct: 1, explanation: "Ta có VTPT $\\vec{n_1}=(3; 4)$ và $\\vec{n_2}=(6; -8)$. <br>$\\cos(\\Delta_1, \\Delta_2) = \\frac{|3 \\cdot 6 + 4 \\cdot (-8)|}{\\sqrt{3^2 + 4^2} \\cdot \\sqrt{6^2 + (-8)^2}} = \\frac{|18 - 32|}{5 \\cdot 10} = \\frac{14}{50} = 0.28$. <br>Suy ra góc $(\\Delta_1, \\Delta_2) \\approx 74^\\circ$." },
+                { id: "oc7_p1_9", question: "Trong mặt phẳng toạ độ $Oxy$, một đường tròn có tâm $I(3; 3)$ tiếp xúc với đường thẳng $\\Delta: 3x + 4y + 4 = 0$. Bán kính đường tròn bằng bao nhiêu?", options: ["5", "3", "9", "25"], correct: 0, explanation: "Bán kính đường tròn tiếp xúc với đường thẳng chính bằng khoảng cách từ tâm $I$ đến đường thẳng $\\Delta$. <br>$R = d(I, \\Delta) = \\frac{|3(3) + 4(3) + 4|}{\\sqrt{3^2 + 4^2}} = \\frac{9 + 12 + 4}{5} = \\frac{25}{5} = 5$." },
+                { id: "oc7_p1_10", question: "Trong mặt phẳng toạ độ $Oxy$, với giá trị nào của $m$ dưới đây thì phương trình $x^2 + y^2 + 2x + 2y - m = 0$ là phương trình của một đường tròn?", options: ["$m = -1$", "$m = -2$", "$m = -3$", "$m = -4$"], correct: 0, explanation: "Phương trình có các hệ số $a = -1, b = -1, c = -m$. <br>Để là phương trình đường tròn thì cần điều kiện $a^2 + b^2 - c > 0 \\Leftrightarrow (-1)^2 + (-1)^2 - (-m) > 0 \\Leftrightarrow 2 + m > 0 \\Leftrightarrow m > -2$. <br>Trong các đáp án, chỉ có $m = -1$ thỏa mãn." },
+                { id: "oc7_p1_11", question: "Phương trình chính tắc của elip đi qua điểm $(5; 0)$ và có tiêu cự bằng $2\\sqrt{5}$ là:", options: ["$\\frac{x^2}{25} + \\frac{y^2}{5} = 1$", "$\\frac{x^2}{25} + \\frac{y^2}{20} = 1$", "$\\frac{x^2}{25} - \\frac{y^2}{5} = 1$", "$\\frac{x^2}{25} - \\frac{y^2}{20} = 1$"], correct: 1, explanation: "Phương trình elip có dạng $\\frac{x^2}{a^2} + \\frac{y^2}{b^2} = 1$ ($a > b > 0$). <br>Đi qua đỉnh trên trục lớn $(5; 0) \\Rightarrow a^2 = 25$. <br>Tiêu cự $2c = 2\\sqrt{5} \\Rightarrow c^2 = 5$. <br>Mà $b^2 = a^2 - c^2 = 25 - 5 = 20$. <br>Vậy phương trình elip là $\\frac{x^2}{25} + \\frac{y^2}{20} = 1$." },
+                { id: "oc7_p1_12", question: "Cho Parabol $(P): y^2 = 12x$. Chọn mệnh đề đúng trong các mệnh đề sau:", options: ["$(P)$ có tiêu điểm $F(-3; 0)$", "$(P)$ có tiêu điểm $F(3; 0)$", "$(P)$ có tiêu điểm $F(0; 3)$", "$(P)$ có tiêu điểm $F(0; -3)$"], correct: 1, explanation: "Phương trình $(P)$ có dạng $y^2 = 2px$ với $2p = 12 \\Rightarrow p = 6$. <br>Tọa độ tiêu điểm của parabol là $F(\\frac{p}{2}; 0) = F(3; 0)$." },
+                { id: "oc7_p1_13", question: "Khoảng cách từ điểm $M(-1; 1)$ đến đường thẳng $3x - 4y - 3 = 0$ bằng:", options: ["$2$", "$\\frac{4}{5}$", "$\\frac{2}{5}$", "$4$"], correct: 0, explanation: "$d = \\frac{|3(-1) - 4(1) - 3|}{\\sqrt{3^2 + (-4)^2}} = \\frac{|-3 - 4 - 3|}{5} = \\frac{10}{5} = 2$." },
+                { id: "oc7_p1_14", question: "Cho điểm $A(1; 2)$ và đường thẳng $d: x - 2y + 3 = 0$. Phương trình đường thẳng đi qua $A$ và vuông góc với $d$ là:", options: ["$2x + y - 4 = 0$", "$x - 2y + 3 = 0$", "$2x - y = 0$", "$x + 2y - 5 = 0$"], correct: 0, explanation: "Đường thẳng vuông góc với $d$ nhận VTCP của $d$ làm VTPT. $d$ có VTPT $\\vec{n_d} = (1; -2) \\Rightarrow \\vec{u_d} = (2; 1)$. <br>Vậy đường thẳng cần tìm có VTPT $(2; 1)$, đi qua $A(1; 2) \\Rightarrow 2(x - 1) + 1(y - 2) = 0 \\Leftrightarrow 2x + y - 4 = 0$." },
+                { id: "oc7_p1_15", question: "Tìm tâm của đường tròn $x^2 + y^2 - 4x + 6y - 3 = 0$.", options: ["$(-2; 3)$", "$(2; -3)$", "$(4; -6)$", "$(-4; 6)$"], correct: 1, explanation: "Tâm $I(a; b)$ được tính bằng cách chia hệ số của $x$ và $y$ cho $-2$. <br>$a = \\frac{-4}{-2} = 2, b = \\frac{6}{-2} = -3$. Vậy tâm là $(2; -3)$." },
+                { id: "oc7_p1_16", question: "Đường tròn đi qua 3 điểm $O(0;0), A(0;4), B(3;0)$ có bán kính là:", options: ["$5$", "$3$", "$4$", "$2.5$"], correct: 3, explanation: "Tam giác $OAB$ vuông tại $O$ (do nằm trên 2 trục tọa độ). Tâm đường tròn ngoại tiếp là trung điểm cạnh huyền $AB$. <br>Đường kính bằng độ dài $AB = \\sqrt{3^2 + 4^2} = 5$. <br>Bán kính $R = 2.5$." },
+                { id: "oc7_p1_17", question: "Hypebol $\\frac{x^2}{16} - \\frac{y^2}{9} = 1$ có độ dài trục thực bằng bao nhiêu?", options: ["8", "16", "4", "6"], correct: 0, explanation: "Từ phương trình chính tắc ta có $a^2 = 16 \\Rightarrow a = 4$. <br>Độ dài trục thực là $2a = 8$." },
+                { id: "oc7_p1_18", question: "Phương trình đường chuẩn của parabol $y^2 = 8x$ là:", options: ["$x = 2$", "$x = -2$", "$x = 4$", "$x = -4$"], correct: 1, explanation: "Phương trình có dạng $y^2 = 2px \\Rightarrow 2p = 8 \\Rightarrow p = 4$. <br>Đường chuẩn có phương trình $x = -\\frac{p}{2} \\Rightarrow x = -2$." },
+                { id: "oc7_p1_19", question: "Cho elip có phương trình $4x^2 + 9y^2 = 36$. Độ dài trục nhỏ của elip là:", options: ["2", "4", "3", "6"], correct: 1, explanation: "Chia 2 vế cho 36 để đưa về dạng chính tắc: $\\frac{x^2}{9} + \\frac{y^2}{4} = 1$. <br>Ta có $b^2 = 4 \\Rightarrow b = 2$. Độ dài trục nhỏ $2b = 4$." },
+                { id: "oc7_p1_20", question: "Xác định góc giữa 2 đường thẳng $d_1: x + y = 0$ và $d_2: x - y = 0$.", options: ["$45^\\circ$", "$60^\\circ$", "$90^\\circ$", "$30^\\circ$"], correct: 2, explanation: "VTPT của 2 đường thẳng lần lượt là $\\vec{n_1} = (1; 1), \\vec{n_2} = (1; -1)$. <br>Tích vô hướng: $\\vec{n_1} \\cdot \\vec{n_2} = 1(1) + 1(-1) = 0 \\Rightarrow d_1 \\perp d_2 \\Rightarrow$ góc giữa chúng là $90^\\circ$." },
+                { id: "oc7_p1_21", question: "Phương trình tham số của đường thẳng đi qua gốc tọa độ và có VTCP $\\vec{u} = (3; -2)$ là:", options: ["$\\begin{cases} x = 3t \\\\ y = -2t \\end{cases}$", "$\\begin{cases} x = -2t \\\\ y = 3t \\end{cases}$", "$\\begin{cases} x = 3 \\\\ y = -2 \\end{cases}$", "$\\begin{cases} x = 3 + t \\\\ y = -2 + t \\end{cases}$"], correct: 0, explanation: "Đường thẳng qua $O(0;0)$ và có $\\vec{u} = (3; -2)$ có hệ phương trình: $\\begin{cases} x = 0 + 3t \\\\ y = 0 - 2t \\end{cases}$." },
+                { id: "oc7_p1_22", question: "Đường thẳng $3x - 2y + 6 = 0$ cắt trục tung tại điểm có tọa độ:", options: ["$(-2; 0)$", "$(0; 3)$", "$(0; -3)$", "$(2; 0)$"], correct: 1, explanation: "Giao với trục tung $Oy$ thì hoành độ $x = 0$. <br>Thay $x = 0 \\Rightarrow -2y + 6 = 0 \\Rightarrow y = 3$. Vậy tọa độ giao điểm là $(0; 3)$." },
+                { id: "oc7_p1_23", question: "Khoảng cách giữa hai đường thẳng song song $x - y + 1 = 0$ và $x - y - 1 = 0$ là:", options: ["$2$", "$\\sqrt{2}$", "$\\frac{1}{\\sqrt{2}}$", "$0$"], correct: 1, explanation: "Lấy điểm $M(0; 1)$ thuộc đường thẳng thứ nhất $x - y + 1 = 0$. <br>Khoảng cách $d = \\frac{|0 - 1 - 1|}{\\sqrt{1^2 + (-1)^2}} = \\frac{2}{\\sqrt{2}} = \\sqrt{2}$." },
+                { id: "oc7_p1_24", question: "Tâm sai của elip $\\frac{x^2}{25} + \\frac{y^2}{16} = 1$ là:", options: ["$\\frac{4}{5}$", "$\\frac{3}{5}$", "$\\frac{16}{25}$", "$\\frac{9}{25}$"], correct: 1, explanation: "Từ phương trình ta có $a^2=25 \\Rightarrow a=5$, $b^2=16 \\Rightarrow c = \\sqrt{a^2-b^2} = 3$. <br>Tâm sai $e = \\frac{c}{a} = \\frac{3}{5}$." },
+                { id: "oc7_p1_25", question: "Phương trình đường tròn đường kính $AB$ với $A(-1; 2)$ và $B(3; 2)$ là:", options: ["$(x-1)^2 + (y-2)^2 = 4$", "$(x-1)^2 + (y-2)^2 = 16$", "$(x+1)^2 + (y+2)^2 = 4$", "$(x-2)^2 + (y-2)^2 = 4$"], correct: 0, explanation: "Tâm $I$ là trung điểm $AB \\Rightarrow x_I=1, y_I=2 \\Rightarrow I(1; 2)$. <br>Bán kính $R = \\frac{AB}{2} = \\frac{4}{2} = 2$. <br>Phương trình: $(x-1)^2 + (y-2)^2 = 4$." },
+                { id: "oc7_p1_26", question: "Một điểm $M$ trên parabol $y^2 = 4x$ có khoảng cách đến tiêu điểm bằng $5$. Hoành độ của $M$ là:", options: ["1", "3", "4", "5"], correct: 2, explanation: "$2p=4 \\Rightarrow p=2$. Khoảng cách từ $M(x_M; y_M)$ đến tiêu điểm bằng khoảng cách từ $M$ đến đường chuẩn $\\Delta: x = -1$. <br>Ta có $d = x_M + \\frac{p}{2} = x_M + 1 = 5 \\Rightarrow x_M = 4$." },
+                { id: "oc7_p1_27", question: "Hypebol có 2 đỉnh trên trục thực là $A_1(-4; 0)$ và $A_2(4; 0)$, đi qua điểm $M(5; 3)$. Phương trình chính tắc là:", options: ["$\\frac{x^2}{16} - \\frac{y^2}{16} = 1$", "$\\frac{x^2}{16} - \\frac{y^2}{9} = 1$", "$\\frac{x^2}{16} - \\frac{y^2}{4} = 1$", "$\\frac{x^2}{25} - \\frac{y^2}{9} = 1$"], correct: 0, explanation: "Đỉnh $A_2(4;0) \\Rightarrow a = 4 \\Rightarrow a^2 = 16$. <br>Thay tọa độ $M(5;3) \\Rightarrow \\frac{25}{16} - \\frac{9}{b^2} = 1 \\Rightarrow \\frac{9}{b^2} = \\frac{9}{16} \\Rightarrow b^2 = 16$. <br>Phương trình chính tắc: $\\frac{x^2}{16} - \\frac{y^2}{16} = 1$." },
+                { id: "oc7_p1_28", question: "Có bao nhiêu đường thẳng đi qua gốc tọa độ $O(0;0)$ và vuông góc với đường thẳng $y = 2x + 1$?", options: ["0", "1", "2", "Vô số"], correct: 1, explanation: "Theo tiên đề hình học phẳng, qua một điểm cho trước, chỉ có duy nhất một đường thẳng vuông góc với một đường thẳng cho trước." },
+                { id: "oc7_p1_29", question: "Bán kính của đường tròn $x^2 + y^2 - 2x = 0$ là:", options: ["1", "2", "0", "4"], correct: 0, explanation: "Xác định hệ số: $a=1, b=0, c=0 \\Rightarrow R = \\sqrt{1^2+0^2-0} = 1$." },
+                { id: "oc7_p1_30", question: "Tiêu cự của hypebol $\\frac{x^2}{9} - \\frac{y^2}{7} = 1$ bằng:", options: ["16", "8", "4", "2"], correct: 1, explanation: "Ta có $c^2 = a^2 + b^2 = 9 + 7 = 16 \\Rightarrow c = 4$. <br>Độ dài tiêu cự là $2c = 8$." }
+            ],
+            part2: [
+                { id: "oc7_p2_1", question: "Trong mặt phẳng với hệ tọa độ $Oxy$, cho đường thẳng $d: 2x - 3y + 2 = 0$. Xét tính đúng sai của các mệnh đề sau:", items: [
+                    { text: "Vectơ pháp tuyến của đường thẳng $d$ là $\\vec{n} = (3; 2)$.", isTrue: false },
+                    { text: "Đường thẳng $d$ đi qua điểm $A(2; 2)$.", isTrue: true },
+                    { text: "Gọi $\\alpha$ là góc giữa đường thẳng $d$ và trục $Ox$, khi đó $\\cos\\alpha = \\frac{3\\sqrt{13}}{13}$.", isTrue: true },
+                    { text: "Đường thẳng $d': 3x + 2y + 2 = 0$ vuông góc với đường thẳng $d$.", isTrue: true }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Sai. Vectơ pháp tuyến của đường thẳng $d$ là $\\vec{n} = (2; -3)$.<br>b) Đúng. Thay tọa độ $A(2; 2)$ vào phương trình $d$: $2(2) - 3(2) + 2 = 4 - 6 + 2 = 0$ (thỏa mãn).<br>c) Đúng. Trục $Ox$ có VTCP là $\\vec{i}=(1; 0)$ nên nhận $\\vec{j}=(0; 1)$ làm VTPT. Góc $\\alpha$ giữa $d$ và $Ox$: $\\cos\\alpha = \\frac{|2 \\cdot 0 + (-3) \\cdot 1|}{\\sqrt{2^2+(-3)^2} \\cdot \\sqrt{0^2+1^2}} = \\frac{3}{\\sqrt{13}} = \\frac{3\\sqrt{13}}{13}$.<br>d) Đúng. VTPT của $d$ là $(2; -3)$, VTPT của $d'$ là $(3; 2)$. Tích vô hướng $2(3) + (-3)(2) = 0 \\Rightarrow d \\perp d'$." },
+                { id: "oc7_p2_2", question: "Cho hai đường thẳng $\\Delta_1: 2x + y + 15 = 0$ và $\\Delta_2: x - 2y - 3 = 0$.", items: [
+                    { text: "Đường thẳng $\\Delta_1$ có vectơ pháp tuyến $\\vec{n_1}=(2; 1)$.", isTrue: true },
+                    { text: "Hai đường thẳng cắt nhau tại điểm $I(\\frac{27}{5}; \\frac{21}{5})$.", isTrue: false },
+                    { text: "Hai đường thẳng $\\Delta_1, \\Delta_2$ vuông góc với nhau.", isTrue: true },
+                    { text: "Khoảng cách từ điểm $A(2; -3)$ đến giao điểm của hai đường thẳng $\\Delta_1, \\Delta_2$ là 5.", isTrue: false }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. Đọc trực tiếp từ phương trình tổng quát của $\\Delta_1$.<br>b) Sai. Giải hệ $\\begin{cases} 2x + y = -15 \\\\ x - 2y = 3 \\end{cases} \\Rightarrow x = -\\frac{27}{5}, y = -\\frac{21}{5}$. Điểm giao là $I(-\\frac{27}{5}; -\\frac{21}{5})$ (cả hai tọa độ đều mang dấu âm).<br>c) Đúng. Tích vô hướng VTPT: $2(1) + 1(-2) = 0$.<br>d) Sai. $IA = \\sqrt{(2 - (-\\frac{27}{5}))^2 + (-3 - (-\\frac{21}{5}))^2} = \\sqrt{(\\frac{37}{5})^2 + (\\frac{6}{5})^2} = \\frac{\\sqrt{1405}}{5} \\approx 7.5 \\ne 5$." },
+                { id: "oc7_p2_3", question: "Trong mặt phẳng tọa độ $Oxy$, cho đường tròn $(C): x^2 + y^2 - 2x - 3 = 0$.", items: [
+                    { text: "Đường tròn có tâm $I(1; 3)$.", isTrue: false },
+                    { text: "Bán kính của đường tròn đã cho là $R=2$.", isTrue: true },
+                    { text: "Tiếp tuyến của đường tròn $(C)$ tại điểm $M(1; 2)$ có phương trình là $y = 2$.", isTrue: true },
+                    { text: "Đường tròn $(C)$ cắt trục tung tại hai điểm phân biệt.", isTrue: true }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Sai. $a = \\frac{-2}{-2} = 1, b = \\frac{0}{-2} = 0 \\Rightarrow$ Tâm là $I(1; 0)$.<br>b) Đúng. $R = \\sqrt{1^2 + 0^2 - (-3)} = \\sqrt{4} = 2$.<br>c) Đúng. Thay $M(1; 2)$ vào phương trình: $1^2+2^2-2(1)-3 = 0 \\Rightarrow M \\in (C)$. Tiếp tuyến tại $M$ nhận $\\vec{IM} = (0; 2)$ làm VTPT $\\Rightarrow 0(x-1) + 2(y-2) = 0 \\Leftrightarrow y=2$.<br>d) Đúng. Khoảng cách từ tâm $I(1; 0)$ đến trục tung $Oy$ ($x=0$) là $d=1$. Bán kính $R=2$. Vì $d < R$ nên đường tròn cắt trục tung tại 2 điểm phân biệt." },
+                { id: "oc7_p2_4", question: "Trong mặt phẳng với hệ tọa độ $Oxy$, cho Elip $(E): \\frac{x^2}{9} + \\frac{y^2}{1} = 1$.", items: [
+                    { text: "Độ dài trục lớn của Elip $(E)$ là 6.", isTrue: true },
+                    { text: "Tọa độ các đỉnh của Elip là $A_1(-3; 0), A_2(3; 0), B_1(0; -1), B_2(0; 1)$.", isTrue: true },
+                    { text: "Tiêu cự của Elip $(E)$ là $2\\sqrt{2}$.", isTrue: false },
+                    { text: "Mọi điểm $M$ nằm trên Elip đều có khoảng cách đến tâm $O$ không vượt quá 3.", isTrue: true }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. $a^2=9 \\Rightarrow a=3 \\Rightarrow$ Trục lớn $2a=6$.<br>b) Đúng. Tương ứng với độ dài các bán trục $a=3$ và $b=1$.<br>c) Sai. $c^2 = a^2 - b^2 = 8 \\Rightarrow c = 2\\sqrt{2} \\Rightarrow$ Tiêu cự $2c = 4\\sqrt{2}$.<br>d) Đúng. Tâm của Elip là gốc tọa độ $O(0;0)$. Trục lớn có nửa độ dài $a=3$. Khoảng cách từ một điểm bất kỳ trên Elip đến tâm $O$ đạt giá trị lớn nhất bằng độ dài bán trục lớn. Vậy $OM \\le 3$." },
+                { id: "oc7_p2_5", question: "Cho đường thẳng $d_1: 3x - 4y + 5 = 0$ và $d_2: 4x + 3y - 2 = 0$.", items: [
+                    { text: "Hai đường thẳng vuông góc với nhau.", isTrue: true },
+                    { text: "Giao điểm của 2 đường thẳng nằm ở góc phần tư thứ nhất.", isTrue: false },
+                    { text: "Khoảng cách từ gốc tọa độ đến $d_1$ là $1$.", isTrue: true },
+                    { text: "Hai đường thẳng cắt nhau tạo thành một góc $90^\\circ$.", isTrue: true }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. Tích vô hướng hai VTPT: $3(4) + (-4)(3) = 0$.<br>b) Sai. Giải hệ $\\begin{cases} 3x - 4y = -5 \\\\ 4x + 3y = 2 \\end{cases} \\Rightarrow x = -\\frac{7}{25}, y = \\frac{26}{25}$. Hoành độ âm, tung độ dương $\\Rightarrow$ Giao điểm nằm ở góc phần tư thứ II.<br>c) Đúng. $d(O, d_1) = \\frac{|3(0) - 4(0) + 5|}{\\sqrt{3^2+(-4)^2}} = \\frac{5}{5} = 1$.<br>d) Đúng. Vì hai đường thẳng vuông góc với nhau (theo chứng minh ở ý a) nên góc giữa chúng chính xác bằng $90^\\circ$." },
+                { id: "oc7_p2_6", question: "Cho đường tròn $(C): x^2 + y^2 = 25$.", items: [
+                    { text: "Đường tròn có bán kính $R = 5$.", isTrue: true },
+                    { text: "Điểm $A(3; 4)$ nằm trên đường tròn.", isTrue: true },
+                    { text: "Tiếp tuyến tại $A$ có phương trình $3x + 4y - 25 = 0$.", isTrue: true },
+                    { text: "Đường thẳng $y=5$ cắt đường tròn tại 2 điểm phân biệt.", isTrue: false }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. Tâm $O(0;0)$ và $R = \\sqrt{25} = 5$.<br>b) Đúng. Tọa độ thỏa mãn $3^2 + 4^2 = 9 + 16 = 25$.<br>c) Đúng. Nhận $\\vec{OA} = (3; 4)$ làm VTPT $\\Rightarrow 3(x-3) + 4(y-4) = 0 \\Leftrightarrow 3x + 4y - 25 = 0$.<br>d) Sai. Khoảng cách từ tâm $O(0;0)$ đến đường thẳng $y-5=0$ là $d = 5 = R$. Vậy đường thẳng này là tiếp tuyến và chỉ chạm đường tròn tại 1 điểm duy nhất $(0; 5)$." },
+                { id: "oc7_p2_7", question: "Cho Hypebol $\\frac{x^2}{4} - \\frac{y^2}{5} = 1$.", items: [
+                    { text: "Trục ảo có độ dài bằng $2\\sqrt{5}$.", isTrue: true },
+                    { text: "Tiêu cự bằng 6.", isTrue: true },
+                    { text: "Đường thẳng $x=2$ cắt Hypebol tại vô số điểm.", isTrue: false },
+                    { text: "Hypebol có tâm sai $e > 1$.", isTrue: true }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. $b^2=5 \\Rightarrow b = \\sqrt{5}$. Trục ảo $2b = 2\\sqrt{5}$.<br>b) Đúng. $c^2 = a^2 + b^2 = 4+5=9 \\Rightarrow c=3 \\Rightarrow$ Tiêu cự $2c=6$.<br>c) Sai. $x=2$ là đường thẳng tiếp tuyến tại đỉnh $A_2(2;0)$ của Hypebol, nên chỉ cắt đồ thị tại đúng 1 điểm duy nhất.<br>d) Đúng. Theo định nghĩa, mọi Hypebol đều có tâm sai $e = \\frac{c}{a} > 1$. Cụ thể ở đây $e = \\frac{3}{2} > 1$." },
+                { id: "oc7_p2_8", question: "Về Parabol $(P): y^2 = 8x$.", items: [
+                    { text: "Tiêu điểm là $F(2; 0)$.", isTrue: true },
+                    { text: "Đường chuẩn có phương trình $x = -2$.", isTrue: true },
+                    { text: "Parabol nhận trục hoành làm trục đối xứng.", isTrue: true },
+                    { text: "Khoảng cách từ đỉnh Parabol đến tiêu điểm bằng 4.", isTrue: false }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. $2p = 8 \\Rightarrow p=4 \\Rightarrow F(\\frac{p}{2}; 0) = F(2; 0)$.<br>b) Đúng. Đường chuẩn $x = -\\frac{p}{2} \\Leftrightarrow x = -2$.<br>c) Đúng. Dạng đồ thị $y^2 = 2px$ luôn nhận $Ox$ (trục hoành) làm trục đối xứng.<br>d) Sai. Đỉnh là gốc tọa độ $O(0;0)$. Khoảng cách từ $O$ đến tiêu điểm $F(2; 0)$ là $OF = 2$ (không phải 4)." },
+                { id: "oc7_p2_9", question: "Xét ba điểm $A(1; 1), B(2; 2), C(3; 3)$.", items: [
+                    { text: "Ba điểm $A, B, C$ thẳng hàng.", isTrue: true },
+                    { text: "Tồn tại duy nhất một đường tròn đi qua cả ba điểm.", isTrue: false },
+                    { text: "Trung điểm của đoạn $AC$ là điểm $B$.", isTrue: true },
+                    { text: "Đường thẳng đi qua ba điểm này là tia phân giác của góc phần tư thứ nhất.", isTrue: true }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. Cả 3 điểm đều có hoành độ bằng tung độ, thỏa mãn phương trình đường thẳng $y=x$.<br>b) Sai. Ba điểm thẳng hàng thì không thể cùng nằm trên một đường tròn.<br>c) Đúng. Trung điểm $M$ của $AC$ có tọa độ $x_M = \\frac{1+3}{2} = 2 = x_B$, $y_M = \\frac{1+3}{2} = 2 = y_B$.<br>d) Đúng. Đường thẳng $y=x$ chính là đường phân giác của góc phần tư thứ I và thứ III trên mặt phẳng tọa độ." },
+                { id: "oc7_p2_10", question: "Đường thẳng $d$ có phương trình theo đoạn chắn $\\frac{x}{2} + \\frac{y}{-3} = 1$.", items: [
+                    { text: "Đường thẳng $d$ đi qua điểm $(2; 0)$.", isTrue: true },
+                    { text: "Đường thẳng $d$ đi qua điểm $(0; 3)$.", isTrue: false },
+                    { text: "Diện tích tam giác tạo bởi $d$ và hai trục tọa độ là 3.", isTrue: true },
+                    { text: "Vectơ pháp tuyến của $d$ là $\\vec{n} = (3; -2)$.", isTrue: true }
+                ], explanation: "<b>Giải thích chi tiết:</b><br>a) Đúng. Giao với trục $Ox$ (cho $y=0$) ta được điểm $(2;0)$.<br>b) Sai. Giao với trục $Oy$ (cho $x=0$) ta được điểm $(0;-3)$.<br>c) Đúng. Diện tích tam giác tạo bởi đường thẳng và hai trục tọa độ là $S = \\frac{1}{2} |a \\cdot b| = \\frac{1}{2} \\cdot 2 \\cdot |-3| = 3$.<br>d) Đúng. Nhân 2 vế của phương trình đoạn chắn cho 6 để đưa về dạng tổng quát: $3x - 2y = 6 \\Leftrightarrow 3x - 2y - 6 = 0 \\Rightarrow \\vec{n}=(3; -2)$." }
+            ],
+            part3: [
+                { id: "oc7_p3_1", question: "Cho tam giác $ABC$ có $A(2; -1), B(4; 5), C(-3; 2)$. Phương trình tổng quát đường cao $AH$ của tam giác có dạng $ax + by + c = 0$ với $a$ là số nguyên dương nguyên tố. Tính tổng $a + b + c$.", keywords: ["-1"], explanation: "Đường cao $AH \\perp BC \\Rightarrow$ nhận $\\vec{CB} = (7; 3)$ làm VTPT. <br>Phương trình $AH$: $7(x - 2) + 3(y - (-1)) = 0 \\Leftrightarrow 7x + 3y - 11 = 0$. <br>Đồng nhất hệ số $a=7$ (số nguyên tố thỏa mãn), $b=3, c=-11$. Tổng $a+b+c = 7 + 3 - 11 = -1$." },
+                { id: "oc7_p3_2", question: "Trong mặt phẳng tọa độ $Oxy$, cho tam giác $ABC$ có $A(1; 1), B(5; -2)$, đỉnh $C$ thuộc đường thẳng $y - 4 = 0$, trọng tâm $G$ thuộc đường thẳng $3x - 2y + 6 = 0$. Tìm hoành độ trọng tâm $G$ (nhập dạng phân số a/b).", keywords: ["-4/3"], explanation: "Đỉnh $C$ nằm trên đường thẳng $y=4 \\Rightarrow$ tọa độ $C(c; 4)$. Giả sử $G(x_G; y_G)$. <br>Tung độ $y_G = \\frac{1 - 2 + 4}{3} = 1$. <br>$G \\in 3x - 2y + 6 = 0 \\Rightarrow 3x_G - 2(1) + 6 = 0 \\Rightarrow 3x_G + 4 = 0 \\Rightarrow x_G = -\\frac{4}{3}$." },
+                { id: "oc7_p3_3", question: "Cho đường thẳng $\\Delta: \\begin{cases} x = 1 + t \\\\ y = 1 + 2t \\end{cases}$. Tìm điểm $N(x_0; y_0) \\in \\Delta$ sao cho khoảng cách từ gốc tọa độ $O$ đến $N$ là nhỏ nhất. Tính giá trị biểu thức $5(x_0 + y_0)$.", keywords: ["1"], explanation: "Khoảng cách $ON$ nhỏ nhất khi $ON \\perp \\Delta \\Rightarrow \\vec{ON} \\cdot \\vec{u_{\\Delta}} = 0$. VTCP $\\vec{u_{\\Delta}} = (1; 2)$. <br>$\\vec{ON}=(1+t; 1+2t) \\Rightarrow 1(1 + t) + 2(1 + 2t) = 0 \\Rightarrow 5t + 3 = 0 \\Rightarrow t = -\\frac{3}{5}$. <br>Tọa độ $N(\\frac{2}{5}; -\\frac{1}{5})$. <br>Giá trị $5(x_0 + y_0) = 5(\\frac{2}{5} - \\frac{1}{5}) = 5(\\frac{1}{5}) = 1$." },
+                { id: "oc7_p3_4", question: "Phương trình đường thẳng đi qua $M(2; 3)$ và cắt hai trục tọa độ tại $A$ và $B$ sao cho $M$ là trung điểm của $AB$ có dạng $\\frac{x}{a} + \\frac{y}{b} = 1$. Tính giá trị của tích $ab$.", keywords: ["24"], explanation: "Gọi $A(x_A; 0), B(0; y_B)$. $M(2;3)$ là trung điểm của đoạn $AB \\Rightarrow x_A = 2x_M = 4$ và $y_B = 2y_M = 6$. <br>Phương trình đoạn chắn là $\\frac{x}{4} + \\frac{y}{6} = 1$. <br>Vậy $a=4, b=6 \\Rightarrow ab = 4 \\cdot 6 = 24$." },
+                { id: "oc7_p3_5", question: "Trong mặt phẳng $Oxy$, xác định độ dài đường kính của đường tròn $(C): (x+1)^2 + (y+2)^2 - 9 = 0$.", keywords: ["6"], explanation: "Chuyển vế phương trình: $(x+1)^2 + (y+2)^2 = 9$. Bán kính $R = \\sqrt{9} = 3$. <br>Đường kính $D = 2R = 6$." },
+                { id: "oc7_p3_6", question: "Tìm độ dài tiêu cự của Elip $(E): \\frac{x^2}{100} + \\frac{y^2}{64} = 1$.", keywords: ["12"], explanation: "Từ phương trình ta có $a^2 = 100, b^2 = 64 \\Rightarrow c^2 = 100 - 64 = 36 \\Rightarrow c = 6$. <br>Độ dài tiêu cự là $2c = 12$." },
+                { id: "oc7_p3_7", question: "Có hai con tàu $A, B$ xuất phát từ 2 bến. Tàu $A$ có tọa độ $x = 3-33t, y = -4+25t$. Tàu $B$ có tọa độ $x = 4-30t, y = 3-40t$. Sau bao lâu (giờ) hai tàu gần nhau nhất? (Làm tròn 2 chữ số thập phân).", keywords: ["0.11", "0,11"], explanation: "Khoảng cách bình phương $AB^2 = (4-30t - (3-33t))^2 + (3-40t - (-4+25t))^2 = (1 + 3t)^2 + (7 - 65t)^2 = 1 + 6t + 9t^2 + 49 - 910t + 4225t^2 = 4234t^2 - 904t + 50$. <br>Hàm số bậc hai đạt GTNN tại hoành độ đỉnh $t = -\\frac{-904}{2 \\cdot 4234} = \\frac{452}{4234} = \\frac{226}{2117} \\approx 0.1067$. Làm tròn: $0.11$ giờ." },
+                { id: "oc7_p3_8", question: "Gọi $R_1, R_2$ là bán kính của các đường tròn đi qua điểm $A(2; -1)$ đồng thời tiếp xúc với cả hai trục tọa độ $Ox, Oy$. Tính tổng $R_1 + R_2$.", keywords: ["6"], explanation: "Điểm $A(2; -1)$ nằm ở góc phần tư thứ 4, nên đường tròn tiếp xúc hai trục cũng nằm ở góc phần tư này. Tâm có dạng $I(R; -R)$ với $R > 0$. <br>Phương trình đường tròn: $(2 - R)^2 + (-1 - (-R))^2 = R^2 \\Leftrightarrow (R-2)^2 + (R-1)^2 = R^2 \\Leftrightarrow 2R^2 - 6R + 5 = R^2 \\Leftrightarrow R^2 - 6R + 5 = 0$. <br>Hai nghiệm là $R_1 = 1, R_2 = 5$. Tổng bán kính $R_1 + R_2 = 6$." },
+                { id: "oc7_p3_9", question: "Cho điểm $M$ nằm trên Elip $(E): \\frac{x^2}{16} + \\frac{y^2}{9} = 1$. Tính tổng khoảng cách từ điểm $M$ đến hai tiêu điểm của elip $(E)$.", keywords: ["8"], explanation: "Theo định nghĩa của Elip, tổng khoảng cách từ một điểm $M$ bất kỳ trên elip đến hai tiêu điểm luôn là một hằng số bằng độ dài trục lớn $2a$. <br>Từ phương trình chính tắc của $(E)$, ta có $a^2 = 16 \\Rightarrow a = 4$. <br>Vậy tổng khoảng cách cần tìm là $MF_1 + MF_2 = 2a = 8$." },
+                { id: "oc7_p3_10", question: "Khoảng cách từ tiêu điểm của parabol $y^2 = 16x$ đến đường chuẩn bằng:", keywords: ["8"], explanation: "Với parabol $y^2 = 2px$, khoảng cách từ tiêu điểm $F(\\frac{p}{2}; 0)$ đến đường chuẩn $\\Delta: x = -\\frac{p}{2}$ chính bằng tham số tiêu $p$. <br>Ta có $2p = 16 \\Rightarrow p = 8$." }
+            ]
+        };
+
+        let currentSession = [];
+        let currentIndex = 0;
+        let score = 0;
+        let selectedAnswers = null;
+
+        function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+        function initGame() {
+            let playedHistory = JSON.parse(localStorage.getItem('played_history_oc7_v3') || '[]');
+            const lastRoundIds = JSON.parse(localStorage.getItem('last_round_oc7_v3') || '[]');
+            
+            const getFresh = (pool, count) => {
+                let available = pool.filter(q => !playedHistory.includes(q.id) && !lastRoundIds.includes(q.id));
+                
+                if (available.length < count) {
+                    const poolIds = pool.map(p => p.id);
+                    playedHistory = playedHistory.filter(id => !poolIds.includes(id));
+                    available = pool.filter(q => !lastRoundIds.includes(q.id));
+                }
+                
+                let selected = shuffle(available).slice(0, count);
+                playedHistory.push(...selected.map(q => q.id));
+                return selected;
+            };
+
+            const p1 = getFresh(MASTER_POOL.part1, 7);
+            const p2 = getFresh(MASTER_POOL.part2, 5);
+            const p3 = getFresh(MASTER_POOL.part3, 3);
+
+            currentSession = [...p1, ...p2, ...p3];
+            
+            localStorage.setItem('played_history_oc7_v3', JSON.stringify(playedHistory));
+            localStorage.setItem('last_round_oc7_v3', JSON.stringify(currentSession.map(q => q.id)));
+
+            currentIndex = 0; 
+            score = 0;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('progress-container').classList.remove('hidden');
+            document.getElementById('footer-actions').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('main-content');
+            const data = currentSession[currentIndex];
+            const qNum = currentIndex + 1;
+            selectedAnswers = (currentIndex < 7) ? null : (currentIndex < 12 ? {} : "");
+
+            document.getElementById('status').innerText = `CÂU ${qNum} / 15`;
+            document.getElementById('progress-bar').style.width = `${(qNum / 15) * 100}%`;
+            document.getElementById('check-btn').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('result-btn').classList.add('hidden');
+
+            let html = `<div class="fade-in">
+                <div class="mb-10 flex items-center gap-4">
+                    <span class="bg-indigo-600 text-white text-xs font-black px-5 py-2.5 rounded-2xl uppercase tracking-widest shadow-lg shadow-indigo-100">PHẦN ${qNum <= 7 ? 'I: TRẮC NGHIỆM' : (qNum <= 12 ? 'II: ĐÚNG/SAI' : 'III: TRẢ LỜI NGẮN')}</span>
+                </div>
+                <div class="text-xl md:text-2xl font-bold text-slate-800 mb-12 leading-relaxed math-render" id="q-text">${data.question}</div>`;
+
+            if (currentIndex < 7) { 
+                html += `<div class="grid gap-6">`;
+                data.options.forEach((opt, i) => {
+                    html += `<button onclick="pickMCQ(${i})" id="mcq-${i}" class="choice-btn group p-7 border-2 border-slate-100 rounded-[2rem] text-left hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center gap-8">
+                        <div class="w-14 h-14 rounded-3xl bg-slate-50 flex items-center justify-center font-black text-slate-400 group-hover:text-indigo-600 transition-colors text-2xl">${String.fromCharCode(65+i)}</div>
+                        <div class="text-xl font-semibold text-slate-700 math-render">${opt}</div>
+                    </button>`;
+                });
+                html += `</div>`;
+            } else if (currentIndex < 12) { 
+                html += `<div class="space-y-6">`;
+                data.items.forEach((item, i) => {
+                    html += `<div class="item-row flex flex-col md:flex-row md:items-center justify-between p-7 bg-slate-50 rounded-[2.5rem] border border-slate-100 gap-6 shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <span class="font-black text-indigo-500 mt-1 text-lg">${['a)', 'b)', 'c)', 'd)'][i]}</span>
+                            <span class="text-xl text-slate-700 font-bold leading-relaxed math-render">${item.text}</span>
+                        </div>
+                        <div class="flex gap-4 min-w-[260px]">
+                            <button onclick="pickTF(${i}, true)" id="tf-${i}-t" class="flex-1 py-5 rounded-[1.5rem] border-2 border-white bg-white font-black text-lg transition active:scale-90 shadow-sm text-slate-400 hover:text-indigo-600">ĐÚNG</button>
+                            <button onclick="pickTF(${i}, false)" id="tf-${i}-f" class="flex-1 py-5 rounded-[1.5rem] border-2 border-white bg-white font-black text-lg transition active:scale-90 shadow-sm text-slate-400 hover:text-indigo-600">SAI</button>
+                        </div>
+                    </div>`;
+                });
+                html += `</div>`;
+            } else { 
+                html += `<div class="relative max-w-lg mx-auto mt-12">
+                    <input type="text" id="short-ans" class="w-full p-10 border-4 border-slate-100 rounded-[3rem] text-5xl font-black text-center text-indigo-600 focus:border-indigo-400 outline-none transition shadow-inner" placeholder="Nhập đáp án...">
+                </div>`;
+            }
+
+            html += `<div id="exp-box" class="hidden mt-12 p-10 rounded-[3rem] explanation-box"></div></div>`;
+            container.innerHTML = html;
+            
+            if (window.MathJax) {
+                MathJax.typesetPromise().then(() => {
+                    document.querySelectorAll('.math-render').forEach(el => el.classList.add('ready'));
+                });
+            }
+        }
+
+        function pickMCQ(idx) {
+            selectedAnswers = idx;
+            document.querySelectorAll('[id^="mcq-"]').forEach(b => {
+                b.classList.replace('border-indigo-500', 'border-slate-100');
+                b.classList.remove('bg-indigo-50');
+            });
+            document.getElementById(`mcq-${idx}`).classList.replace('border-slate-100', 'border-indigo-500');
+            document.getElementById(`mcq-${idx}`).classList.add('bg-indigo-50');
+        }
+
+        function pickTF(idx, val) {
+            if (typeof selectedAnswers !== 'object') selectedAnswers = {};
+            selectedAnswers[idx] = val;
+            const btnT = document.getElementById(`tf-${idx}-t`), btnF = document.getElementById(`tf-${idx}-f`);
+            btnT.className = `flex-1 py-5 rounded-[1.5rem] border-2 font-black text-lg transition active:scale-90 ${val === true ? 'bg-indigo-500 text-white border-indigo-500 shadow-md' : 'bg-white border-white text-slate-400'}`;
+            btnF.className = `flex-1 py-5 rounded-[1.5rem] border-2 font-black text-lg transition active:scale-90 ${val === false ? 'bg-indigo-500 text-white border-indigo-500 shadow-md' : 'bg-white border-white text-slate-400'}`;
+        }
+
+        function processAnswer() {
+            const data = currentSession[currentIndex];
+            let isCorrect = false;
+
+            if (currentIndex < 7) {
+                if (selectedAnswers === null) return alert("Vui lòng chọn đáp án!");
+                isCorrect = (selectedAnswers === data.correct);
+                if (isCorrect) score += 1;
+                document.getElementById(`mcq-${data.correct}`).classList.add('bg-green-50', 'border-green-500');
+                if(!isCorrect) document.getElementById(`mcq-${selectedAnswers}`).classList.add('bg-red-50', 'border-red-500');
+            } else if (currentIndex < 12) {
+                let correctCount = 0;
+                let isFullAnswered = true;
+                for(let i=0; i<4; i++) { if(selectedAnswers[i] === undefined) isFullAnswered = false; }
+                if(!isFullAnswered) return alert("Vui lòng chọn Đúng/Sai cho tất cả các ý!");
+
+                data.items.forEach((item, i) => { if (selectedAnswers[i] === item.isTrue) correctCount++; });
+                const points = [0, 0.1, 0.25, 0.5, 1];
+                score += points[correctCount];
+                isCorrect = (correctCount === 4);
+            } else {
+                const input = document.getElementById('short-ans').value.trim().toLowerCase().replace(',', '.');
+                if(!input) return alert("Vui lòng nhập đáp án!");
+                isCorrect = data.keywords.some(k => input.includes(k.toLowerCase()));
+                if (isCorrect) score += 1;
+            }
+
+            const exp = document.getElementById('exp-box');
+            exp.innerHTML = `<h4 class="text-indigo-600 font-extrabold text-2xl mb-6 uppercase tracking-tighter">${isCorrect ? '✨ CHÍNH XÁC!' : '❌ HÃY KIỂM TRA LẠI LỜI GIẢI'}</h4>
+                             <div class="text-slate-700 font-medium leading-loose math-render text-lg" id="exp-text">${data.explanation}</div>`;
+            exp.classList.remove('hidden');
+            document.getElementById('check-btn').classList.add('hidden');
+
+            if (currentIndex === 14) document.getElementById('result-btn').classList.remove('hidden');
+            else document.getElementById('next-btn').classList.remove('hidden');
+            
+            if (window.MathJax) {
+                MathJax.typesetPromise().then(() => {
+                    const el = document.getElementById('exp-text');
+                    if(el) el.classList.add('ready');
+                });
+            }
+        }
+
+        function renderNext() { currentIndex++; renderQuestion(); }
+
+        function finishGame() {
+            const container = document.getElementById('main-content');
+            document.getElementById('footer-actions').classList.add('hidden');
+            document.getElementById('progress-container').classList.add('hidden');
+            
+            const finalScore = ((score / 15) * 10).toFixed(2);
+            let rank = finalScore >= 8.5 ? "XUẤT SẮC" : (finalScore >= 6.5 ? "KHÁ GIỎI" : "CẦN CỐ GẮNG");
+            
+            container.innerHTML = `<div class="text-center py-20 fade-in">
+                <div class="text-[12rem] mb-12 animate-pulse drop-shadow-2xl">🏆</div>
+                <h2 class="text-6xl font-black text-slate-800 mb-6 uppercase tracking-tighter">${rank}</h2>
+                <div class="text-[10rem] leading-none font-black text-indigo-500 my-16 tracking-tighter italic">${finalScore}<span class="text-4xl text-slate-300 ml-6 not-italic">/ 10</span></div>
+                <button onclick="location.reload()" class="bg-indigo-600 text-white px-24 py-8 rounded-[3rem] font-black text-3xl shadow-xl hover:bg-indigo-700 transition active:scale-95 uppercase tracking-wide">LÀM ĐỀ MỚI</button>
+            </div>`;
+        }
+    </script>
+</body>
+</html>
